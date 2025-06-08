@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte Vita</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2em;
+    }
+    input[type="text"] {
+      width: 300px;
+      padding: 0.5em;
+      margin-bottom: 1em;
+    }
+    .card {
+      border: 1px solid #ccc;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+    }
+    .card-title {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    button {
+      margin-top: 0.5em;
+      padding: 0.3em 0.6em;
+    }
+    .popup {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background: white;
+      padding: 1.5em;
+      border: 2px solid black;
+      z-index: 100;
+      max-width: 80%;
+      max-height: 80%;
+      overflow: auto;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+  <h1>Carte Vita</h1>
+  <input type="text" id="search" placeholder="Cerca una carta...">
+  <div id="cards"></div>
+
+  <h2>Mazzo Virtuale</h2>
+  <ul id="mazzo"></ul>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="popup" id="popup">
+    <pre id="popup-content"></pre>
+    <button onclick="closePopup()">Chiudi</button>
+  </div>
+
+  <script>
+    let tutteLeCarte = [];
+    let mazzo = [];
+
+    fetch('cards.json')
+      .then(response => response.json())
+      .then(data => {
+        tutteLeCarte = data;
+        mostraCarte(data);
+      });
+
+    document.getElementById('search').addEventListener('input', function () {
+      const testo = this.value.toLowerCase();
+      const filtrate = tutteLeCarte.filter(c => 
+        (c["NOME CARTA"] || "").toLowerCase().includes(testo) ||
+        (c.EFFETTI || "").toLowerCase().includes(testo) ||
+        (c["ABILITA'"] || "").toLowerCase().includes(testo)
+      );
+      mostraCarte(filtrate);
+    });
+
+    function mostraCarte(carte) {
+      const container = document.getElementById('cards');
+      container.innerHTML = '';
+      carte.forEach((carta, index) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+
+        let html = `<div class="card-title">${carta["NOME CARTA"]}</div>`;
+        if (carta.COSTO) html += `<div><strong>Costo:</strong> ${carta.COSTO}</div>`;
+        if (carta.PIETRA) html += `<div><strong>Pietra:</strong> ${carta.PIETRA}</div>`;
+        if (carta.CLASSIFICAZIONE) html += `<div><strong>Classificazione:</strong> ${carta.CLASSIFICAZIONE}</div>`;
+        if (carta["ABILITA'"]) html += `<div><strong>Abilità:</strong> ${carta["ABILITA'"]}</div>`;
+        if (carta.EFFETTI) html += `<div><strong>Effetti:</strong> ${carta.EFFETTI}</div>`;
+
+        html += `<button onclick="aggiungiAlMazzo('${carta["NOME CARTA"]}')">Aggiungi al mazzo</button>`;
+        html += `<button onclick="apriPopup(${index})">Dettagli</button>`;
+        
+        div.innerHTML = html;
+        container.appendChild(div);
+      });
+    }
+
+    function aggiungiAlMazzo(nome) {
+      mazzo.push(nome);
+      aggiornaMazzo();
+    }
+
+    function rimuoviDalMazzo(index) {
+      mazzo.splice(index, 1);
+      aggiornaMazzo();
+    }
+
+    function aggiornaMazzo() {
+      const lista = document.getElementById('mazzo');
+      lista.innerHTML = '';
+      mazzo.forEach((nome, index) => {
+        const li = document.createElement('li');
+        li.textContent = nome;
+        const btn = document.createElement('button');
+        btn.textContent = 'Rimuovi';
+        btn.onclick = () => rimuoviDalMazzo(index);
+        li.appendChild(btn);
+        lista.appendChild(li);
+      });
+    }
+
+    function apriPopup(index) {
+      const carta = tutteLeCarte[index];
+      const dettagli = {};
+
+      for (const chiave in carta) {
+        if (carta[chiave] && carta[chiave].toString().trim() !== '') {
+          dettagli[chiave] = carta[chiave];
+        }
+      }
+
+      const content = document.getElementById('popup-content');
+      content.textContent = JSON.stringify(dettagli, null, 2);
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
