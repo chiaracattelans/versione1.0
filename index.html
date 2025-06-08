@@ -27,7 +27,7 @@
       margin-top: 0.5em;
       padding: 0.3em 0.6em;
     }
-    .popup {
+    .popup, .mazzo-popup {
       display: none;
       position: fixed;
       top: 20%;
@@ -48,20 +48,35 @@
       background: rgba(0,0,0,0.5);
       z-index: 99;
     }
+    #mazzoBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 18px;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0.4em 0.6em;
+    }
   </style>
 </head>
 <body>
   <h1>Carte Vita</h1>
   <input type="text" id="search" placeholder="Cerca una carta...">
+  <button id="mazzoBtn">🧺 Mazzo</button>
   <div id="cards"></div>
-
-  <h2>Mazzo Virtuale</h2>
-  <ul id="mazzo"></ul>
 
   <div class="overlay" id="overlay"></div>
   <div class="popup" id="popup">
     <pre id="popup-content"></pre>
     <button onclick="closePopup()">Chiudi</button>
+  </div>
+
+  <div class="mazzo-popup" id="mazzoPopup">
+    <h2>Mazzo Virtuale</h2>
+    <ul id="mazzo"></ul>
+    <button onclick="closeMazzo()">Chiudi Mazzo</button>
   </div>
 
   <script>
@@ -149,6 +164,17 @@
 
     function closePopup() {
       document.getElementById('popup').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+    }
+
+    document.getElementById('mazzoBtn').addEventListener('click', function () {
+      aggiornaMazzo();
+      document.getElementById('mazzoPopup').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    });
+
+    function closeMazzo() {
+      document.getElementById('mazzoPopup').style.display = 'none';
       document.getElementById('overlay').style.display = 'none';
     }
   </script>
