@@ -26,6 +26,7 @@
     button {
       margin-top: 0.5em;
       padding: 0.3em 0.6em;
+      cursor: pointer;
     }
     .popup, .mazzo-popup {
       display: none;
@@ -82,6 +83,7 @@
     <option>PARENTE</option><option>POTENZIATO</option><option>PROTAGONISTA</option>
     <option>SOSTENITORE</option><option>STARLIGHT</option>
   </select>
+  <button id="applicaFiltriBtn">🎯 Applica Filtri</button>
 
   <button id="mazzoBtn">🧺 Mazzo</button>
   <div id="cards"></div>
@@ -100,7 +102,7 @@
 
   <script>
     let tutteLeCarte = [];
-    let mazzo = [];
+    let mazzo = {};
 
     fetch('cards.json')
       .then(response => response.json())
@@ -109,10 +111,7 @@
         mostraCarte(data);
       });
 
-    document.querySelectorAll('#search, #filtroCosto, #filtroPietra, #filtroClassificazione').forEach(el => {
-      el.addEventListener('input', filtraCarte);
-      el.addEventListener('change', filtraCarte);
-    });
+    document.getElementById('applicaFiltriBtn').addEventListener('click', filtraCarte);
 
     function filtraCarte() {
       const testo = document.getElementById('search').value.toLowerCase();
@@ -158,27 +157,35 @@
     }
 
     function aggiungiAlMazzo(nome) {
-      mazzo.push(nome);
+      if (mazzo[nome]) {
+        mazzo[nome]++;
+      } else {
+        mazzo[nome] = 1;
+      }
       aggiornaMazzo();
     }
 
-    function rimuoviDalMazzo(index) {
-      mazzo.splice(index, 1);
+    function rimuoviDalMazzo(nome) {
+      if (mazzo[nome] > 1) {
+        mazzo[nome]--;
+      } else {
+        delete mazzo[nome];
+      }
       aggiornaMazzo();
     }
 
     function aggiornaMazzo() {
       const lista = document.getElementById('mazzo');
       lista.innerHTML = '';
-      mazzo.forEach((nome, index) => {
+      for (const nome in mazzo) {
         const li = document.createElement('li');
-        li.textContent = nome;
+        li.textContent = `${nome} x${mazzo[nome]}`;
         const btn = document.createElement('button');
         btn.textContent = 'Rimuovi';
-        btn.onclick = () => rimuoviDalMazzo(index);
+        btn.onclick = () => rimuoviDalMazzo(nome);
         li.appendChild(btn);
         lista.appendChild(li);
-      });
+      }
     }
 
     function apriPopup(index) {
